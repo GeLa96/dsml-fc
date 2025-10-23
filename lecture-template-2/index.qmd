@@ -1,0 +1,113 @@
+---
+title: "Quarto Template"
+author: "Data Science and Machine Learning Class"
+---
+
+
+# Learning Quarto
+
+
+## Basic Markdown
+
+::: {.imageContainer }
+
+You can consult [this site](https://quarto.org/docs/authoring/markdown-basics.html){targe="_blank"} for some info about basic markdown usage in Quarto. Anyway here is some stuff:
+
+```markdown
+[Link Text](https://wifo.ac.at){target="_blank" .myLink}
+```
+
+[Link Text](https://wifo.ac.at){target="_blank" .myLink}
+
+```markdown
+![WU logo inside .imageContainer](img/wu.svg){fig-align="left" .myLogo .defaultLogo}
+```
+
+![WU logo inside .imageContainer](img/wu.svg){fig-align="left" .myLogo .defaultLogo}
+
+:::
+
+
+Check in the css what is different here:
+
+![WU logo outside .imageContainer](img/wu.svg){fig-align="left" .myLogo .defaultLogo}
+
+
+Note that we can also do the same stuff we do in basic markdown with some html:
+
+```html
+<a href="https://wifo.ac.at" target="_blank" class="myLink">Link Text</a>
+```
+
+<a href="https://wifo.ac.at" target="_blank" class="myLink">Link Text</a>
+
+
+## Code Chunks
+
+Some info about code chunks can be found [here](https://quarto.org/docs/output-formats/html-code.html){target="_blank"}
+
+```{r}
+#| output: false
+#| echo: false
+#| eval: true
+library(tidyverse)
+library(kableExtra)
+
+data <- read_csv("data/cases.csv")
+```
+
+::: {.column-screen-inset}
+
+```{r}
+#| output: true
+#| echo: true
+#| eval: true
+
+data |>
+    filter(row_number() <= 10) |>
+    kable("html")
+```
+
+:::
+
+
+## Interactivity in Quarto Notebooks
+
+This is an example of how you can control this pages output with stuff that happens in your data in your R code:
+
+```{r}
+#| output: true
+#| echo: true
+#| eval: true
+
+plot_data <- data |>
+    separate(
+        case_nr,
+        into = c("region", "court_nr"),
+        sep = ", "
+    ) |>
+    mutate(
+        year = as.numeric(substr(month, 1, 4))
+    ) |>
+    group_by(region, year) |>
+    count() |>
+    group_by(region) |>
+    filter(sum(n) > 50)
+
+selectYear <- 2010
+
+favoriten <- plot_data |>
+    filter(year == selectYear & region == "BG Favoriten") |>
+    pull()
+innere <- plot_data |>
+    filter(year == selectYear & region == "BG Innere Stadt Wien") |>
+    pull()
+
+color <- ifelse(favoriten > innere, "red", "green")
+word <- ifelse(favoriten > innere, "more", "less")
+```
+
+The number of cases in Favoriten in `{r} selectYear` was `{r} favoriten`, while in Innere Stadt it was `{r} innere`. So the number in Favoriten was <span style="color:`{r} color`;"> `{r} word` </span>.
+
+Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.  
+
