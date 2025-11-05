@@ -7,7 +7,7 @@ execute:
 ---
 
 ```{r}
-#install.packages(c("RSelenium", "netstat"))
+# install.packages(c("RSelenium", "netstat"))
 library(rvest)
 library(readr)
 library(RSelenium)
@@ -230,7 +230,7 @@ for (i in 1:nrow(data_cases)) {
 
     data_info <- data_info |> add_row(temp)
 
-    if (i %% 100 == 0) {
+    if (i %% 100 == 0) { # every 100 observation it gives an update on how far the code is
         print(paste0("Total: ", nrow(data_cases), ", Current: ", i))
     }
 }
@@ -239,6 +239,7 @@ for (i in 1:nrow(data_cases)) {
 Often time quite some data wrangling is needed to end up with the data format you wish to have:
 
 ```{r}
+### dont run this part!! It will chrash
 data_decisions <- data_info %>%
     mutate(
         court = sapply(str_split(case_nr, ", "), "[[", 1),
@@ -293,11 +294,23 @@ data_wide <- data_decisions %>%
 Now we turn to RSelenium. Sometimes we find the data hidden behind some elements we can not easily extract from the DOM. Then using Selenium might be the way to proceed.
 
 ```{r}
-selenium_server <- rsDriver(
-    browser = "firefox",
-    chromever = NULL,
-    verbose = FALSE,
-    port = 3333L
+### =====original code===== ### 
+#selenium_server <- rsDriver( # firefox is used since it is more stable
+#    browser = "firefox",
+#    chromever = NULL, # specify the chrome version 
+#    verbose = FALSE,
+#    port = 3333L
+#)
+### =====original code===== ### 
+
+### ====adjusted part from mail==== ### 
+# Close any existing connection
+tryCatch(client$close(), error = function(e) {})
+# Create a fresh connection
+client <- remoteDriver(
+remoteServerAddr = "localhost",
+port = 4444L,
+browserName = "firefox"
 )
 
 client <- selenium_server$client
@@ -308,6 +321,7 @@ Some basic functions we can use in the browser:
 ```{r}
 client$open()
 client$setWindowSize(600, 600)
+client$setWindowPosition(x = 460, y = 0)
 client$navigate("https://edikte.justiz.gv.at")
 client$refresh()
 client$closeWindow()
@@ -316,13 +330,15 @@ client$closeWindow()
 Revisiting the edikte website we see that we could have also used Selenium to make search requests:
 
 ```{r}
-client$navigate(URL_base)
+#client$navigate(URL_base)
+client$navigate("https://www.statistik.at/atlas/")
+
 
 element <- client$findElement(using = "link text", "Erweiterte Suche")
 element$getElementAttribute("href")
 element$clickElement()
 
-search_field <- client$findElement(using = "name", "SchuldnerS")
+search_field <- client$findElement(using = "name", "SchuldnerS") # using = "css selector"
 search_field$sendKeysToElement(list("Lukas Schmoigl", key = "enter"))
 
 client$executeScript("window.scrollTo(0,document.body.scrollHeight);")
