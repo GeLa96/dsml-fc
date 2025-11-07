@@ -10,34 +10,34 @@ execute:
 library(rvest)
 library(readr)
 library(RSelenium)
-#library(netstat)
+# library(netstat)
 library(tidyverse)
 library(lubridate)
 library(zoo)
 library(data.table)
-#library(binman)
-#library(wdman)
+# library(binman)
+# library(wdman)
 ```
 
 ```{r}
-#date to selects
+# date to selects
 startDate <- "09/02/2024"
 endDate <- "11/02/2025"
-#Category to select
+# Category to select
 category <- "#category_employment"
 ```
 
 ```{r}
-#firefox_path <- "C:/Program Files/Mozilla Firefox/firefox.exe" 
+# firefox_path <- "C:/Program Files/Mozilla Firefox/firefox.exe"
 
 
-#eCaps <- list(
+# eCaps <- list(
 #    `moz:firefoxOptions` = list(
 #        binary = firefox_path
 #    )
-#)
+# )
 #
-#selenium_server <- rsDriver(
+# selenium_server <- rsDriver(
 #    browser = "firefox",
 #    extraCapabilities = eCaps,
 #    chromever = NULL,
@@ -46,36 +46,36 @@ category <- "#category_employment"
 #    verbose = TRUE,
 #    port = 4169L,
 #    check = FALSE
-#)
+# )
 
-#client <- selenium_server$client
+# client <- selenium_server$client
 
 #### Close any existing connection and ensures that a brand new Selenium browser session is created and ready to use.
-#tryCatch(client$close(), error = function(e) {}) # closes any previous Selenium browsers
+# tryCatch(client$close(), error = function(e) {}) # closes any previous Selenium browsers
 #### Create a fresh connection
-#client <- remoteDriver(   # creats new connection with R and selenium 
-#remoteServerAddr = "localhost",
-#port = 4444L,
-#browserName = "firefox"
-#)
+# client <- remoteDriver(   # creats new connection with R and selenium
+# remoteServerAddr = "localhost",
+# port = 4444L,
+# browserName = "firefox"
+# )
 
 tryCatch(client$close(), error = function(e) {})
 eCaps <- list(pageLoadStrategy = "eager") # helps avoid getting stuck with client$open()
 client <- remoteDriver(
-remoteServerAddr = "localhost",
-port = 4444L,
-browserName = "firefox",
-extraCapabilities = eCaps
+    remoteServerAddr = "localhost",
+    port = 4444L,
+    browserName = "firefox",
+    extraCapabilities = eCaps
 )
 
 
 # launches a new Firefox window
 client$open()
-#client$setWindowSize(600, 600)
-#client$setWindowPosition(x = 460, y = 0)
+# client$setWindowSize(600, 600)
+# client$setWindowPosition(x = 460, y = 0)
 client$setTimeout(type = "page load", milliseconds = 20000L)
-client$setTimeout(type = "script",    milliseconds = 30000L)
-client$setTimeout(type = "implicit",  milliseconds = 0L)
+client$setTimeout(type = "script", milliseconds = 30000L)
+client$setTimeout(type = "implicit", milliseconds = 0L)
 ```
 
 ```{r}
@@ -87,81 +87,88 @@ client$navigate("https://www.investing.com/economic-calendar/")
 # removes cookie banner
 accept_ccokies_button <- client$findElement(using = "css", "#onetrust-accept-btn-handler")
 accept_ccokies_button$clickElement()
-# removes marketing pop ups, so clicks wont be blocked 
+# removes marketing pop ups, so clicks wont be blocked
 button_element <- client$findElement(using = "css", ".popupCloseIcon")
 button_element$clickElement()
 # Country selection
 filter_countries_button <- client$findElement(using = "css", "#filterStateAnchor") # Filter button
 filter_countries_button$clickElement()
 
-deselect_all_button <- client$findElement(using = "css", "#calendarFilterBox_country > div:nth-child(1) > a:nth-child(4)") # selects country filter box -> selects square with Country: , select all and clear -> selects clear 
+deselect_all_button <- client$findElement(using = "css", "#calendarFilterBox_country > div:nth-child(1) > a:nth-child(4)") # selects country filter box -> selects square with Country: , select all and clear -> selects clear
 deselect_all_button$clickElement()
 
-select_us_button <- client$findElement(using = "css", "#country5") # Selects United States 
+select_us_button <- client$findElement(using = "css", "#country5") # Selects United States
 select_us_button$clickElement()
 
-select_category_button <- client$findElement(using = "css", category) # category predefined 
+select_category_button <- client$findElement(using = "css", category) # category predefined
 select_category_button$clickElement()
 
 apply_filter_button <- client$findElement(using = "css", "#ecSubmitButton") # applys selection
 apply_filter_button$clickElement()
-# selecting data range 
+# selecting data range
 select_date_button <- client$findElement(using = "css", "#datePickerToggleBtn") # selects calender icon
 select_date_button$clickElement()
 
 start_date_input <- client$findElement(using = "css", value = "#startDate") # selects start dat option
 start_date_input$clearElement() # clears start date option
-start_date_input$sendKeysToElement(list(startDate)) # use predefined start date 
+start_date_input$sendKeysToElement(list(startDate)) # use predefined start date
 
-end_date_input   <- client$findElement(using = "css", value = "#endDate") # selects end date 
-end_date_input$clearElement() # clears end data option 
-end_date_input$sendKeysToElement(list(endDate)) # use predfined end date 
+end_date_input <- client$findElement(using = "css", value = "#endDate") # selects end date
+end_date_input$clearElement() # clears end data option
+end_date_input$sendKeysToElement(list(endDate)) # use predfined end date
 
-apply_date_button <- client$findElement(using = "css", "#applyBtn") # applys 
+apply_date_button <- client$findElement(using = "css", "#applyBtn") # applys
 apply_date_button$clickElement()
-# loads the data selected before 
+# loads the data selected before
 # the code inside "..." is JavaScript, what it does : “Scroll to the bottom 90 times in a row.”
-scrolling_script <- " 
-    let numScrolls = 90; 
-    for (let i = 0; i < numScrolls; i++) {
+scrolling_script <- "
+    let numScrolls = 90;
+    for (let i = 0; i < numScrolls; i = i +1) {
         window.scrollTo(0, document.body.scrollHeight);
     }
 "
 client$executeScript(scrolling_script)
-Sys.sleep(5)
+Sys.sleep(5) # pauses R for a given number of seconds  "wait before continuing"
 ```
 
 ```{r}
-page_source <- client$getPageSource()[[1]]
-
+# Returns a list of the current open webpage (after filters, clicks and scrolling)
+page_source <- client$getPageSource()[[1]] # page source returns a list so [[1]] returns the actual HTML
+# changes the raw HTML into structured HTML document
 page <- read_html(page_source)
-
-econ_info <- page |> html_elements("#economicCalendarData") |> html_table()
-
+# slects the data table and creates a data frame
+econ_info <- page |>
+    html_elements("#economicCalendarData") |>
+    html_table()
+# selects the first element of the list
 df <- econ_info[[1]]
-df <- df [-8:-9]
+# removes unnamed columns <chr>
+df <- df[-8:-9]
 ```
 
 ```{r}
-#clean dataframe
+# clean dataframe
 days_of_week <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 clean_dataframe <- function(df) {
-    helper <- ""
-    df <- df[df[, 3] != "Holiday", ]
-  for (i in 1:nrow(df)) {
-    if (any(grepl(paste(days_of_week, collapse = "|"), df[i, 1], ignore.case = TRUE))) {
-      helper <- df[i,1]
+    helper <- "" # create helper with empty string
+    df <- df[df[, 3] != "Holiday", ] # selects importance column
+    for (i in 1:nrow(df)) { # goes through every row of df
+        if (any(grepl(paste(days_of_week, collapse = "|"), # creates or operator between weekdays
+            df[i, 1],
+            ignore.case = TRUE
+        ))) { # grepl checks if clumns of df contain weekday name
+            helper <- df[i, 1] # if df contains week days store it in the helper function
+        }
+        df[i, 1] <- paste(helper, " ", df[i, 1]) # adds hours to the column time of helper
     }
-    df[i,1] <- paste(helper, " ", df[i,1])
-  }
-  df <- df[df[, 4] != df[, 5], ]
-  return(df)
+    df <- df[df[, 4] != df[, 5], ] # removes rows where column Event and Actual have the same input
+    return(df)
 }
 
 new_df <- clean_dataframe(df)
 
-data_tibble <- as_tibble(new_df)
-write_csv(data_tibble, "data/economic_calender_US_employment.csv") # save data 
+data_tibble <- as_tibble(new_df) # tibble verions of cleaned data
+# write_csv(data_tibble, "data/economic_calender_US_employment.csv") # save data
 ```
 
 ```{r}
