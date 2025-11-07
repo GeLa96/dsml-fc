@@ -301,6 +301,8 @@ Now we turn to RSelenium. Sometimes we find the data hidden behind some elements
 #    verbose = FALSE,
 #    port = 3333L
 #)
+
+#client <- selenium_server$client
 ### =====original code===== ### 
 
 ### ====adjusted part from mail==== ### 
@@ -313,7 +315,7 @@ port = 4444L,
 browserName = "firefox"
 )
 
-client <- selenium_server$client
+
 ```
 
 Some basic functions we can use in the browser:
