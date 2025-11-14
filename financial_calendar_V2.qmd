@@ -73,9 +73,9 @@ client <- remoteDriver(
 client$open()
 # client$setWindowSize(600, 600)
 # client$setWindowPosition(x = 460, y = 0)
-client$setTimeout(type = "page load", milliseconds = 20000L)
-client$setTimeout(type = "script", milliseconds = 30000L)
-client$setTimeout(type = "implicit", milliseconds = 0L)
+#client$setTimeout(type = "page load", milliseconds = 20000L)
+#client$setTimeout(type = "script", milliseconds = 30000L)
+#client$setTimeout(type = "implicit", milliseconds = 0L)
 ```
 
 ```{r}
@@ -157,9 +157,9 @@ clean_dataframe <- function(df) {
             df[i, 1],
             ignore.case = TRUE
         ))) { # grepl checks if clumns of df contain weekday name
-            helper <- df[i, 1] # if df contains week days store it in the helper function
+            helper <- df[i, 1] # if df contains weekdays store it in the helper function
         }
-        df[i, 1] <- paste(helper, " ", df[i, 1]) # adds hours to the column time of helper
+        df[i, 1] <- paste(helper, " ", df[i, 1]) # adds hours to the column Time of helper
     }
     df <- df[df[, 4] != df[, 5], ] # removes rows where column Event and Actual have the same input
     return(df)
